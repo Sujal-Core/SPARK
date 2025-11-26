@@ -11,4 +11,6 @@ Thumbs.db
 .idea/
 *.cache
 cache.json
+# Ignore local secret files
+secret.key
 
