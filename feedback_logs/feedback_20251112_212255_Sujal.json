@@ -1,0 +1,19 @@
+{
+    "timestamp": "20251112_212255",
+    "name": "Sujal",
+    "email": "sujalmehra82194@gmail.com",
+    "rating": "4",
+    "experience": "very good experince",
+    "improvements": "very good",
+    "analysis": {
+        "sentiment": "Positive",
+        "priority": "Low",
+        "rating": 4,
+        "confidence": 93,
+        "insights": [
+            "Customer shows strong satisfaction.",
+            "Likely to recommend to others."
+        ],
+        "recommendation": "Leverage this positive feedback for testimonials."
+    }
+}
