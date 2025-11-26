@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>CareerMentor | AI Domain Quiz</title>
+
+<!-- Font Awesome & Chart.js -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- CodeMirror (Light Theme, Multi-language Support) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/eclipse.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/clike/clike.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/htmlmixed/htmlmixed.min.js"></script>
+
+<style>
+  :root{
+    --bg1: #6a5af9;
+    --bg2: #8369f7;
+    --card-bg: #ffffff;
+    --primary: #4c6ef5;
+    --accent: #3a0ca3;
+    --success: #2ecc71;
+    --warning: #f39c12;
+    --danger: #f72585;
+    --muted: #6b7280;
+    --radius: 12px;
+    --shadow: 0 10px 30px rgba(16,24,40,0.08);
+  }
+
+  /* -------------------------
+     Base layout & typography
+     -------------------------*/
+  html,body{height:100%;margin:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{
+    background: linear-gradient(135deg,var(--bg1),var(--bg2));
+    padding:24px;
+    box-sizing:border-box;
+    color:#111827;
+  }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+  }
+
+  .topcard{
+    background:var(--card-bg);
+    border-radius:var(--radius);
+    padding:24px;
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+    text-align:center;
+  }
+  .topcard h1{ margin:0; color:var(--accent); font-size:22px;}
+  .topcard p{ margin:6px 0 0; color:var(--muted); }
+
+  .layout{
+    display:grid;
+    grid-template-columns:300px 1fr;
+    gap:20px;
+    align-items:start;
+  }
+
+  /* Sidebar (config) */
+  .sidebar{
+    background:var(--card-bg);
+    border-radius:12px;
+    padding:18px;
+    box-shadow:var(--shadow);
+  }
+  .sidebar h3{ margin:0 0 12px; color:#111827;}
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-weight:600; margin-bottom:8px; color:#111827;}
+  select,input[type="range"],button{
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid #e6e6f0; box-sizing:border-box; font-size:14px;
+  }
+  input[type="range"]{ padding:6px 0; }
+  .domain-list{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px; max-height:260px; overflow:auto; padding-right:6px;
+  }
+  .domain-btn{
+    background:var(--primary); color:#dc4c13; border:none; padding:8px 10px; border-radius:10px; cursor:pointer; font-size:13px;
+  }
+  .domain-btn.active{ background:var(--accent); box-shadow:0 6px 18px rgba(58,12,163,0.12); }
+
+  .generate-btn{ background:var(--accent); color:white; font-weight:700; border:none; padding:10px; border-radius:10px; cursor:pointer; }
+
+  /* Right side: dashboard + quiz */
+  .right{
+    display:flex; flex-direction:column; gap:16px;
+  }
+
+  .cards{
+    display:flex; gap:14px; align-items:stretch; flex-wrap:wrap;
+  }
+  .card{
+    background:var(--card-bg);
+    padding:18px;
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    min-width: 160px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+  }
+  .card .icon{ font-size:20px; color:var(--accent); margin-bottom:8px;}
+  .card h4{ margin:0; font-size:16px; }
+  .card p{ margin:6px 0 0; color:var(--muted); font-size:13px; }
+
+  /* Quiz area */
+  .quiz-card{
+    background:var(--card-bg);
+    padding:20px;
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    margin-top:6px;
+  }
+  .question-meta{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+  .question-meta .left{ font-weight:700; color:#111827; }
+  .question-text{ background:#fbfbff; padding:16px; border-radius:10px; border:1px solid #eef2ff; margin-bottom:12px; color:#111827; }
+
+  .options{ display:flex; flex-direction:column; gap:10px; }
+  .option{
+    padding:12px 14px; border-radius:10px; background:#ffffff; border:1px solid #edf2ff; cursor:pointer; transition:all 180ms;
+  }
+  .option:hover{ transform:translateY(-3px); box-shadow:0 6px 18px rgba(76,110,245,0.06); }
+  .option.selected{ background:linear-gradient(90deg,var(--primary),var(--accent)); color:white; border-color:transparent; }
+
+  .nav-row{ display:flex; gap:12px; margin-top:18px; justify-content:flex-end; align-items:center;}
+  .nav-row button{ padding:10px 18px; border-radius:10px; border:none; color:rgb(255, 255, 255); font-weight:700; cursor:pointer; }
+  .btn-back{ background:#3a0ca3; }
+  .btn-skip{ background:#f39c12; }
+  .btn-next{ background:var(--primary); }
+  .btn-next[disabled]{ opacity:0.5; cursor:not-allowed; }
+
+  /* Make submit button green (user requested) */
+  #submitBtn, .btn-success {
+    background: #16a34a !important; /* green */
+    color: #fff !important;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+  }
+  #submitBtn:hover, .btn-success:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+  }
+
+  /* Charts container (side-by-side) */
+  .charts-row{
+    display:flex;
+    gap:18px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    margin-top:12px;
+    opacity:0;
+    transform: translateY(8px);
+    transition: opacity 400ms ease, transform 400ms ease;
+  }
+  .charts-row.visible{ opacity:1; transform: translateY(0); }
+  .chart-card{
+    background:var(--card-bg);
+    padding:14px;
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    flex:1;
+    min-width:260px;
+  }
+
+  /* Explanations full-width under charts */
+  .explanations-list{
+    background:var(--card-bg);
+    padding:18px;
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    margin-top:18px;
+    opacity:0;
+    transform: translateY(8px);
+    transition: opacity 400ms ease 150ms, transform 400ms ease 150ms;
+  }
+  .explanations-list.visible{ opacity:1; transform: translateY(0); }
+
+  /* Enhanced explanation item styling (improved readability) */
+  .explanation-item{
+    border-bottom:1px solid #eef2ff;
+    padding:16px;
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+    background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.8));
+    margin-bottom:12px;
+    border-radius:8px;
+    box-shadow: 0 2px 8px rgba(12,18,40,0.03);
+  }
+  .explanation-item .left-block{
+    min-width:48px;
+    max-width:48px;
+    text-align:center;
+  }
+  .explanation-item .left-block .num{
+    background:#eef2ff;
+    color:var(--accent);
+    font-weight:700;
+    padding:8px;
+    border-radius:8px;
+    display:inline-block;
+    min-width:36px;
+  }
+  .explanation-item .right-block{
+    flex:1;
+  }
+  .explanation-item h4{ margin:0 0 8px; font-size:15px; color:#111827; }
+  .explanation-item p{ margin:6px 0 0; color:var(--muted); font-size:14px; white-space:pre-wrap; line-height:1.6; }
+  .explanation-item .result {
+    font-weight:700;
+    margin-top:8px;
+  }
+  .explanation-item .explanation-text {
+    margin-top:8px;
+    background:#fbfbff;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #eef2ff;
+    color:#111827;
+  }
+
+  /* Coding textarea style */
+  .code-area {
+    width:100%;
+    min-height:160px;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #e6e6f0;
+    box-sizing:border-box;
+    font-family: "Courier New", monospace;
+    font-size:13px;
+    margin-bottom:10px;
+    resize:vertical;
+  }
+
+  /* CodeMirror styling */
+  .CodeMirror {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+    height: 200px;
+    margin-bottom:10px;
+  }
+
+  /* Centered welcome overlay */
+  .welcome-overlay{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: linear-gradient(180deg, rgba(10,10,10,0.15), rgba(10,10,10,0.15));
+    z-index:2000;
+  }
+  .welcome-card{
+    width:720px;
+    max-width:92%;
+    background:var(--card-bg);
+    border-radius:14px;
+    padding:28px;
+    box-shadow:0 20px 50px rgba(16,24,40,0.18);
+    text-align:center;
+    transition: opacity 400ms ease, transform 400ms ease;
+  }
+  .welcome-card.hidden{ opacity:0; transform: translateY(-18px) scale(0.995); pointer-events:none; }
+
+  @media(max-width:1000px){
+    .layout{ grid-template-columns:1fr; }
+    .cards{ flex-direction:column; }
+    .nav-row{ justify-content:space-between; }
+    .charts-row{ flex-direction:column; }
+    .welcome-card{ width:92%; padding:18px; }
+  }
+
+  @media(min-width:1000px){
+    /* Ensure charts are exactly side-by-side when space allows */
+    .chart-card { width: calc(50% - 9px); box-sizing:border-box; }
+    .charts-row { gap:18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topcard">
+    <h1><i class="fas fa-bullseye"></i> AI Domain Quiz Generator</h1>
+    <p>Test your knowledge across multiple tech domains using AI-powered quizzes</p>
+  </div>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <h3>⚙️ Quiz Configuration</h3>
+
+      <div class="field">
+        <label for="domainSelect">Select Your Domain</label>
+        <select id="domainSelect">
+          <option value="">-- Choose domain --</option>
+          <option>AI Engineer</option>
+          <option>Blockchain Engineer</option>
+          <option>Business Intelligence Engineer</option>
+          <option>Business Analyst</option>
+          <option>Cloud Computing Engineer</option>
+          <option>Cybersecurity Engineer</option>
+          <option>DevOps Engineer</option>
+          <option>Deep Learning Engineer</option>
+          <option>Data Scientist</option>
+          <option>Data Analyst</option>
+          <option>Data Engineer</option>
+          <option>Ethical AI Engineer</option>
+          <option>Edge AI Developer</option>
+          <option>Full Stack Engineer</option>
+          <option>Gen AI Engineer</option>
+          <option>IoT Engineer</option>
+          <option>LLM Engineer</option>
+          <option>ML Engineer</option>
+          <option>MLOps Engineer</option>
+          <option>Robotics Engineer</option>
+          <option>Back-End Developer</option>
+          <option>Front-End Developer</option>
+          <option>App Developer</option>
+          <option>Web Developer</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="difficultySelect">Difficulty Level</label>
+        <select id="difficultySelect">
+          <option>Easy</option>
+          <option selected>Medium</option>
+          <option>Hard</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Number of Questions: <span id="numVal">5</span></label>
+        <input id="numRange" type="range" min="5" max="15" value="5">
+      </div>
+
+      <div class="field">
+        <button id="generateBtn" class="generate-btn"><i class="fas fa-rocket"></i> Generate Quiz</button>
+      </div>
+
+      <div style="margin-top:10px; font-size:13px; color:var(--muted)">
+        <strong>Instructions</strong>
+        <ul style="padding-left:18px; margin:8px 0;">
+          <li>MCQ: Single correct answer</li>
+          <li>MSQ: Multiple correct answers</li>
+          <li>CODING: Predict code output (options provided) or write code (for Hard level)</li>
+          <li>NUMERIC: Enter exact number where required</li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Right: Dashboard + Quiz -->
+    <main class="right">
+      <!-- Dashboard cards -->
+      <div class="cards">
+        <div class="card">
+          <div class="icon"><i class="fas fa-book"></i></div>
+          <h4 id="cardDomain">Domain</h4>
+          <p id="cardDomainSub">—</p>
+        </div>
+
+        <div class="card">
+          <div class="icon"><i class="fas fa-bolt"></i></div>
+          <h4 id="cardDiff">Difficulty</h4>
+          <p id="cardDiffSub">—</p>
+        </div>
+
+        <div class="card">
+          <div class="icon"><i class="fas fa-clock"></i></div>
+          <h4 id="cardTimer">00:00</h4>
+          <p id="cardTimerSub">Time Elapsed</p>
+        </div>
+
+        <div class="card">
+          <div class="icon"><i class="fas fa-chart-line"></i></div>
+          <h4 id="cardProgress">0/0</h4>
+          <p>Progress</p>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar"><div id="prog" class="progress"></div></div>
+      </div>
+
+      <!-- Quiz card -->
+      <section class="quiz-card" id="quizCard" style="display:none;">
+        <div class="question-meta">
+          <div class="left"><span id="qLabel">Question 1</span> • <span id="qType">MCQ</span></div>
+          <div class="right" style="color:var(--muted)"><span id="qNumber">1</span>/<span id="qTotal">1</span></div>
+        </div>
+
+        <div class="question-text" id="questionText">Question text will appear here</div>
+
+        <div class="options" id="optionsContainer"></div>
+
+        <div class="nav-row">
+          <button id="backBtn" class="btn-back">⬅ Back</button>
+          <button id="skipBtn" class="btn-skip">⏭ Skip</button>
+          <button id="nextBtn" class="btn-next" disabled>Next ➡</button>
+          <button id="submitBtn" class="btn-success" style="display:none;">Submit</button>
+        </div>
+      </section>
+
+      <!-- Charts (side-by-side) -->
+      <div class="charts-row" id="chartsRow" style="display:none;">
+        <div class="chart-card" id="pieCard">
+          <h3 style="margin:6px 0 12px;">Pie Chart</h3>
+          <canvas id="pieChart"></canvas>
+        </div>
+        <div class="chart-card" id="barCard">
+          <h3 style="margin:6px 0 12px;">Bar Chart</h3>
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Explanations full width (below charts) -->
+      <div class="explanations-list" id="explanationsList" style="display:none;">
+        <h3 style="margin-top:0;">Detailed Explanations</h3>
+        <!-- items inserted via JS -->
+      </div>
+
+      <!-- Loading -->
+      <section id="loading" style="display:none; text-align:center; padding:24px;">
+        <div style="width:60px;height:60px;border-radius:50%;border:6px solid rgba(0,0,0,0.06);border-top:6px solid #fff;margin:12px auto; animation:spin 1s linear infinite"></div>
+        <p style="color:#fff">Generating quiz, please wait...</p>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- Centered Welcome overlay (appears at start) -->
+<div class="welcome-overlay" id="welcomeOverlay" aria-hidden="false">
+  <div class="welcome-card" id="welcomeCard">
+    <h2 style="margin:0 0 8px;"> Welcome to AI Domain Quiz</h2>
+    <p style="margin:0 0 6px; color:var(--muted); max-width:760px;">Configure the quiz from the left panel (domain, difficulty, number of questions). When you're ready, click <strong>Generate Quiz</strong>. MSQ questions support multiple selections — click all that apply.</p>
+    <p style="margin:8px 0 12px; color:var(--muted); font-size:13px;">Keyboard: <code>→</code> next, <code>←</code> back, <code>S</code> skip.</p>
+    <button id="welcomeStartBtn" class="generate-btn" style="padding:10px 18px;"><i class="fas fa-play"></i> Start</button>
+  </div>
+</div>
+
+<script>
+/* ----------------------
+  Config & state
+-----------------------*/
+  const apiGenerate = "/api/generate_quiz";
+  // server-side submit endpoint (may be absent; client falls back to local scoring when server unavailable)
+  const apiSubmitQuiz = "/api/submit-quiz";
+
+const domainSelect = document.getElementById("domainSelect");
+const difficultySelect = document.getElementById("difficultySelect");
+const numRange = document.getElementById("numRange");
+const numVal = document.getElementById("numVal");
+const generateBtn = document.getElementById("generateBtn");
+
+const quizCard = document.getElementById("quizCard");
+const questionText = document.getElementById("questionText");
+const optionsContainer = document.getElementById("optionsContainer");
+const nextBtn = document.getElementById("nextBtn");
+const backBtn = document.getElementById("backBtn");
+const skipBtn = document.getElementById("skipBtn");
+const submitBtn = document.getElementById("submitBtn");
+const prog = document.getElementById("prog");
+
+const cardDomain = document.getElementById("cardDomain");
+const cardDomainSub = document.getElementById("cardDomainSub");
+const cardDiff = document.getElementById("cardDiff");
+const cardDiffSub = document.getElementById("cardDiffSub");
+const cardTimer = document.getElementById("cardTimer");
+const cardProgress = document.getElementById("cardProgress");
+const qLabel = document.getElementById("qLabel");
+const qType = document.getElementById("qType");
+const qNumber = document.getElementById("qNumber");
+const qTotal = document.getElementById("qTotal");
+
+const loading = document.getElementById("loading");
+const chartsRow = document.getElementById("chartsRow");
+const explanationsList = document.getElementById("explanationsList");
+const pieCanvas = document.getElementById("pieChart");
+const barCanvas = document.getElementById("barChart");
+const scoreSummary = document.getElementById("scoreSummary"); // not used but left for compatibility
+
+const welcomeOverlay = document.getElementById("welcomeOverlay");
+const welcomeCard = document.getElementById("welcomeCard");
+const welcomeStartBtn = document.getElementById("welcomeStartBtn");
+
+let questions = [];
+let current = 0;
+let totalQuestions = 0;
+let selectedAnswer = null;
+let score = 0;
+let skipped = 0;
+let attempted = 0;
+let answersCollection = []; // user-selected answers (strings or arrays)
+let explanationsCollection = []; // store explanation text for each question if returned by API
+let timerInterval = null;
+let timeElapsed = 0; // seconds
+let codeMirrorEditors = []; // Track CodeMirror instances per question
+
+// update number display
+numRange.addEventListener('input', () => numVal.innerText = numRange.value);
+
+/* ----------------------
+  Timer utilities
+-----------------------*/
+// kept original behavior but allow optional duration (seconds) to be passed
+function startTimer(durationSeconds = null) {
+  // if a duration is provided, we measure from 0 up to it (useful if you prefer a deadline)
+  timeElapsed = 0;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeElapsed++;
+    const mm = String(Math.floor(timeElapsed/60)).padStart(2,'0');
+    const ss = String(timeElapsed%60).padStart(2,'0');
+    cardTimer.innerText = `${mm}:${ss}`;
+    // If durationSeconds provided, optionally auto-submit when exceeding it
+    if (durationSeconds && timeElapsed >= durationSeconds) {
+      stopTimer();
+      // gracefully finish current question set
+      finalizeAndSubmit();
+    }
+  }, 1000);
+}
+function stopTimer(){ clearInterval(timerInterval); }
+
+/* ----------------------
+  Welcome handling
+  - Fade out and remove whole white welcome area permanently when quiz starts
+-----------------------*/
+function removeWelcomeOverlay() {
+  if(!welcomeOverlay) return;
+  welcomeCard.classList.add('hidden');
+  welcomeOverlay.style.transition = 'opacity 400ms ease';
+  welcomeOverlay.style.opacity = '0';
+  setTimeout(() => {
+    if (welcomeOverlay && welcomeOverlay.parentNode) {
+      welcomeOverlay.parentNode.removeChild(welcomeOverlay);
+    }
+  }, 420);
+}
+
+// If user clicks the Start button on welcome, scroll sidebar into view (do not start quiz automatically)
+if (welcomeStartBtn) {
+  welcomeStartBtn.addEventListener('click', (e) => {
+    removeWelcomeOverlay();
+    const sid = document.getElementById("sidebar");
+    if (sid) sid.scrollIntoView({behavior:'smooth'});
+  });
+}
+
+/* ----------------------
+  Generate quiz
+  - On generate: remove welcome overlay (permanent), then call API
+  - This function calls backend endpoint to generate questions; it expects the backend
+    to return a JSON object structured like:
+      { success: true, questions: [ { question, options, type, correct, explanation }, ... ] }
+  - Updated to use apiGenerate constant and AbortController (timeout) and to disable button while running.
+-----------------------*/
+async function handleGenerateQuiz() {
+  const domain = domainSelect.value;
+  const difficulty = difficultySelect.value;
+  const num_questions = parseInt(numRange.value);
+
+  if(!domain) return alert("Please select a domain from the sidebar.");
+
+  // Remove welcome overlay permanently if present (fade)
+  removeWelcomeOverlay();
+
+  // UI prep
+  loading.style.display = 'block';
+  loading.innerText = 'Generating quiz...';
+  quizCard.style.display = 'none';
+  chartsRow.style.display = 'none';
+  chartsRow.classList.remove('visible');
+  explanationsList.style.display = 'none';
+  explanationsList.classList.remove('visible');
+  document.querySelectorAll('.summary-card').forEach(el => el.remove());
+
+  explanationsList.innerHTML = '<h3 style="margin-top:0;">Detailed Explanations</h3>'; // reset
+  const sidEl = document.getElementById("sidebar");
+  if (sidEl) sidEl.scrollIntoView({behavior:'smooth'});
+
+  // update dashboard cards immediately
+  cardDomain.innerText = domain;
+  cardDomainSub.innerText = "Domain";
+  cardDiff.innerText = difficulty;
+  cardDiffSub.innerText = "Difficulty";
+
+  // safety: prevent double-click spamming
+  generateBtn.disabled = true;
+
+  // Use AbortController to timeout the fetch if backend takes too long
+  const controller = new AbortController();
+  const timeoutMs = 25000; // 25s timeout for generation (tunable)
+  const to = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    // Use apiGenerate constant (previous code used literal '/api/generate_quiz' — now consistent)
+    const res = await fetch(apiGenerate, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain, difficulty, num_questions }),
+      signal: controller.signal
+    });
+
+    clearTimeout(to);
+
+    if (!res.ok) {
+      // attempt to parse json error if present
+      let text = '';
+      try { text = await res.text(); } catch(_) { text = res.statusText; }
+      throw new Error(`Server error: ${res.status} ${res.statusText} ${text ? ' - ' + text : ''}`);
+    }
+
+    const data = await res.json();
+
+    if (!data.success || !data.questions) throw new Error(data.error || "No questions returned");
+
+    // Expect data.questions as an array like:
+    // [{ question: "...", options: [...], type: "MCQ"|"MSQ"|"CODING", correct: [...], explanation: "..." }, ...]
+    questions = data.questions;
+    totalQuestions = questions.length;
+    current = 0;
+    score = 0;
+    skipped = 0;
+    attempted = 0;
+    answersCollection = new Array(totalQuestions).fill(null);
+    explanationsCollection = new Array(totalQuestions).fill(null);
+    codeMirrorEditors = new Array(totalQuestions).fill(null); // Initialize CodeMirror tracking
+    cardProgress.innerText = `0/${totalQuestions}`;
+    qTotal.innerText = totalQuestions;
+
+    // show quiz
+    loading.style.display = 'none';
+    quizCard.style.display = 'block';
+    // start timer — use optional totalQuestions-based duration (1 minute per question) if you want auto-submit deadline
+    // keep default behavior (count up) but pass duration to auto-submit if desired:
+    startTimer(/* pass seconds if you want auto-submit, e.g. totalQuestions * 60 */);
+    showQuestion();
+  } catch(err){
+    console.error("Quiz generation error:", err);
+    loading.style.display = 'none';
+    // more helpful message for users
+    if (err.name === 'AbortError') {
+      alert("Quiz generation timed out. The backend may be slow — try again or check server logs.");
+    } else {
+      alert("Failed to generate quiz. " + (err.message || "Check backend or API key."));
+    }
+  } finally {
+    clearTimeout(to);
+    generateBtn.disabled = false;
+  }
+}
+
+if (generateBtn) generateBtn.addEventListener('click', handleGenerateQuiz);
+
+/* ----------------------
+  Render question (enhanced)
+  - Supports MSQ multi-select
+  - Restores previous selections
+  - No explanation shown during quiz
+  - Supports CODING questions: shows textarea for code input
+  - Safe CodeMirror usage (checks window.CodeMirror)
+-----------------------*/
+function normalizeCorrect(correct) {
+  if (!correct) return [];
+  if (Array.isArray(correct)) return correct.map(c => String(c).trim().toLowerCase());
+  return [String(correct).trim().toLowerCase()];
+}
+
+function showQuestion(){
+  if(!questions || questions.length===0) return;
+  const q = questions[current];
+  if(!q) return;
+
+  qLabel.innerText = `Question ${current+1}`;
+  qType.innerText = (q.type || "MCQ").toUpperCase();
+  questionText.innerText = q.question || "—";
+  qNumber.innerText = current+1;
+  qTotal.innerText = totalQuestions;
+  cardProgress.innerText = `${current+1}/${totalQuestions}`;
+
+  // progress bar
+  const percent = Math.round(((current) / Math.max(1, totalQuestions)) * 100);
+  prog.style.width = `${percent}%`;
+
+  // options / coding area
+  optionsContainer.innerHTML = "";
+  selectedAnswer = null;
+  nextBtn.disabled = true;
+
+  // Restore previous selection
+  const prev = answersCollection[current];
+  const opts = (q.options && q.options.length) ? q.options : [];
+
+  const qTypeStr = String(q.type || "").toUpperCase();
+  const isMSQ = qTypeStr === 'MSQ';
+  const isCODING = qTypeStr.startsWith('CODING');
+  const isNUMERIC = qTypeStr === 'NUMERIC';
+
+  /* ----------------------------
+     CASE 1 — CODING question
+     ---------------------------- */
+    if (isCODING) {
+      // Determine sub-type
+      const isCodingMCQ = qTypeStr === 'CODING-MCQ';
+      const isCodingWrite = qTypeStr === 'CODING-WRITE' || qTypeStr === 'CODING-WRITE'.toUpperCase();
+
+      // For coding-write and default coding we need a textarea
+      if (isCodingWrite || (!isCodingMCQ && !isCodingWrite)) {
+        // create textarea for code entry
+        const ta = document.createElement('textarea');
+        ta.className = 'code-area';
+        ta.id = 'codingArea';
+        ta.placeholder = 'Write your code here...';
+        if (prev && typeof prev === 'string') ta.value = prev;
+        optionsContainer.appendChild(ta);
+
+        setTimeout(() => {
+          try {
+            if (window.CodeMirror) {
+              if (codeMirrorEditors[current]) {
+                try { codeMirrorEditors[current].toTextArea(); } catch (e) {}
+              }
+              codeMirrorEditors[current] = CodeMirror.fromTextArea(ta, {
+                lineNumbers: true,
+                mode: 'python',
+                theme: 'eclipse',
+                tabSize: 2,
+                lineWrapping: true
+              });
+              if (prev && typeof prev === 'string') codeMirrorEditors[current].setValue(prev);
+              codeMirrorEditors[current].on('change', (editor) => {
+                const val = editor.getValue().trim();
+                nextBtn.disabled = val.length === 0;
+                selectedAnswer = val.length ? val : null;
+              });
+            } else {
+              ta.addEventListener('input', () => {
+                const val = ta.value.trim();
+                nextBtn.disabled = val.length === 0;
+                selectedAnswer = val.length ? val : null;
+              });
+            }
+          } catch (e) {
+            ta.addEventListener('input', () => {
+              const val = ta.value.trim();
+              nextBtn.disabled = val.length === 0;
+              selectedAnswer = val.length ? val : null;
+            });
+          }
+        }, 10);
+
+        if (prev && typeof prev === 'string' && prev.trim().length > 0) {
+          selectedAnswer = prev;
+          nextBtn.disabled = false;
+        }
+      }
+
+      // CODING-MCQ: options only (no textarea required)
+      if (isCodingMCQ) {
+        const label = document.createElement('div');
+        label.innerHTML = `<em style="color:var(--muted)">Select the correct output:</em>`;
+        label.style.marginBottom = '8px';
+        optionsContainer.appendChild(label);
+
+        opts.forEach(opt => {
+          const d = document.createElement('div');
+          d.className = 'option';
+          d.innerText = opt;
+          if (prev && (Array.isArray(prev) ? prev.includes(opt) : prev === opt)) {
+            d.classList.add('selected');
+          }
+          d.addEventListener('click', () => {
+            document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+            d.classList.add('selected');
+            selectedAnswer = opt;
+            nextBtn.disabled = false;
+          });
+          optionsContainer.appendChild(d);
+        });
+
+        if (prev) {
+          selectedAnswer = prev;
+          nextBtn.disabled = false;
+        }
+      }
+
+  /* ----------------------------
+     CASE 2 — MCQ / MSQ / NUMERIC
+     ---------------------------- */
+  } else {
+    if (opts.length === 0) {
+  if (isNUMERIC) {
+    // 🧮 For numeric questions, show an input box
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.placeholder = 'Enter your numeric answer...';
+    input.className = 'code-area';
+    input.style.height = 'auto';
+    input.style.fontSize = '15px';
+    optionsContainer.appendChild(input);
+
+    // Restore previous answer if any
+    if (prev && typeof prev === 'string') input.value = prev;
+
+    // Enable Next when user types
+    input.addEventListener('input', () => {
+      const val = input.value.trim();
+      nextBtn.disabled = val.length === 0;
+      selectedAnswer = val.length ? val : null;
+    });
+
+    if (prev && prev.trim().length > 0) {
+      selectedAnswer = prev;
+      nextBtn.disabled = false;
+    }
+  } else {
+    // For non-numeric no-option questions
+    const msg = document.createElement('div');
+    msg.innerHTML = `<em style="color:var(--muted)">No options provided — please type or think through your answer.</em>`;
+    optionsContainer.appendChild(msg);
+  }
+}
+ else {
+      opts.forEach(opt => {
+        const d = document.createElement('div');
+        d.className = 'option';
+        d.innerText = opt;
+
+        if(prev && (Array.isArray(prev) ? prev.includes(opt) : prev === opt)){
+          d.classList.add('selected');
+        }
+
+        d.addEventListener('click', () => {
+          if(isMSQ) {
+            d.classList.toggle('selected');
+          } else {
+            document.querySelectorAll('.option').forEach(o=>o.classList.remove('selected'));
+            d.classList.add('selected');
+          }
+
+          const selectedEls = Array.from(document.querySelectorAll('.option.selected')).map(e => e.textContent);
+          if (isMSQ) {
+            selectedAnswer = selectedEls.slice();
+            nextBtn.disabled = selectedAnswer.length === 0;
+          } else {
+            selectedAnswer = selectedEls.length ? selectedEls[0] : null;
+            nextBtn.disabled = !selectedAnswer;
+          }
+        });
+
+        optionsContainer.appendChild(d);
+      });
+    }
+
+    if (prev) {
+      if (Array.isArray(prev) && prev.length) {
+        selectedAnswer = prev.slice();
+        nextBtn.disabled = false;
+      } else if (!Array.isArray(prev) && prev !== null) {
+        selectedAnswer = prev;
+        nextBtn.disabled = false;
+      }
+    }
+  }
+
+  backBtn.style.display = (current>0) ? 'inline-block' : 'none';
+  nextBtn.style.display = (current < totalQuestions - 1) ? 'inline-block' : 'none';
+  submitBtn.style.display = (current === totalQuestions - 1) ? 'inline-block' : 'none';
+}
+
+
+/* ----------------------
+  Handlers: next, back, skip, submit (enhanced)
+  - Do NOT show explanation during the quiz
+  - Store answers in answersCollection
+  - Coding answers saved as strings; options as before
+-----------------------*/
+
+function saveCurrentSelectionIfCoding() {
+  // If current is coding question, capture textarea content
+  const q = questions[current];
+  if (!q) return;
+  const isCODING = String(q.type || "").toUpperCase() === 'CODING';
+  if (isCODING) {
+    let val = '';
+    try {
+      if (codeMirrorEditors[current] && typeof codeMirrorEditors[current].getValue === 'function') {
+        val = codeMirrorEditors[current].getValue();
+      } else {
+        const ta = document.getElementById('codingArea');
+        val = ta ? ta.value : (selectedAnswer || null);
+      }
+    } catch(e) {
+      const ta = document.getElementById('codingArea');
+      val = ta ? ta.value : (selectedAnswer || null);
+    }
+    if (val !== null && val !== undefined && String(val).trim().length > 0) {
+      answersCollection[current] = String(val);
+    } else {
+      answersCollection[current] = null;
+    }
+  }
+}
+
+function enhancedNextHandler() {
+  // gather selection if not set
+  const q = questions[current];
+  const isCODING = q && String(q.type || "").toUpperCase() === 'CODING';
+
+  if (isCODING) {
+    // if selectedAnswer not set, read from CodeMirror or textarea
+    if (selectedAnswer === null) {
+      let val = '';
+      try {
+        if (codeMirrorEditors[current] && typeof codeMirrorEditors[current].getValue === 'function') {
+          val = codeMirrorEditors[current].getValue().trim();
+        } else {
+          const ta = document.getElementById('codingArea');
+          val = ta ? ta.value.trim() : "";
+        }
+      } catch(e) {
+        const ta = document.getElementById('codingArea');
+        val = ta ? ta.value.trim() : "";
+      }
+      if (!val) return; // require code to proceed
+      selectedAnswer = val;
+    }
+    // save
+    answersCollection[current] = String(selectedAnswer);
+  } else {
+    if (selectedAnswer === null) {
+      const selectedEls = Array.from(document.querySelectorAll('.option.selected')).map(e => e.textContent);
+      if (selectedEls.length === 0) return;
+      selectedAnswer = selectedEls.length === 1 ? selectedEls[0] : selectedEls.slice();
+    }
+    answersCollection[current] = Array.isArray(selectedAnswer) ? selectedAnswer.slice() : selectedAnswer;
+  }
+
+  attempted++;
+
+  // local correctness increment for later summary
+  const correctArr = normalizeCorrect(q.correct);
+  if (Array.isArray(answersCollection[current])) {
+    const selectedNorm = answersCollection[current].map(s => String(s).trim().toLowerCase());
+    const correctSet = new Set(correctArr);
+    const selectedSet = new Set(selectedNorm);
+    if (correctArr.length > 0 && selectedSet.size === correctSet.size && [...correctSet].every(c => selectedSet.has(c))) {
+      score++;
+    }
+  } else {
+    if (correctArr.length > 0 && String(answersCollection[current]).trim().toLowerCase() === correctArr[0]) {
+      score++;
+    }
+  }
+
+  // clear selectedAnswer so next question starts fresh
+  selectedAnswer = null;
+
+  // move to next
+  current++;
+  if (current < totalQuestions) {
+    showQuestion();
+  } else {
+    // all questions answered or moved past last
+    finalizeAndSubmit();
+  }
+}
+
+function enhancedBackHandler() {
+  // save current selection if any
+  const q = questions[current];
+  if (q && String(q.type || "").toUpperCase() === 'CODING') {
+    saveCurrentSelectionIfCoding();
+  } else {
+    const selectedEls = Array.from(document.querySelectorAll('.option.selected')).map(e => e.textContent);
+    if (selectedEls.length) answersCollection[current] = selectedEls.length === 1 ? selectedEls[0] : selectedEls.slice();
+  }
+
+  if (current > 0) {
+    current--;
+    // restore selectedAnswer to help UI
+    const prev = answersCollection[current];
+    selectedAnswer = prev ? (Array.isArray(prev) ? prev.slice() : prev) : null;
+    showQuestion();
+  }
+}
+
+function enhancedSkipHandler() {
+  // mark skipped
+  answersCollection[current] = null;
+  skipped++;
+  current++;
+  selectedAnswer = null;
+  if (current < totalQuestions) {
+    showQuestion();
+  } else {
+    finalizeAndSubmit();
+  }
+}
+
+async function enhancedSubmitHandler() {
+  const q = questions[current];
+  const isCODING = q && String(q.type || "").toUpperCase() === 'CODING';
+
+  if (isCODING) {
+    let val = '';
+    try {
+      if (codeMirrorEditors[current] && typeof codeMirrorEditors[current].getValue === 'function') {
+        val = codeMirrorEditors[current].getValue().trim();
+      } else {
+        const ta = document.getElementById('codingArea');
+        val = ta ? ta.value.trim() : "";
+      }
+    } catch(e) {
+      const ta = document.getElementById('codingArea');
+      val = ta ? ta.value.trim() : "";
+    }
+    if (!val) {
+      alert("Please write your code before submitting.");
+      return;
+    }
+    answersCollection[current] = String(val);
+  } else {
+    const selectedEls = Array.from(document.querySelectorAll('.option.selected')).map(e => e.textContent);
+    if (!selectedEls.length) {
+      alert("Please select an option before submitting.");
+      return;
+    }
+    answersCollection[current] = selectedEls.length === 1 ? selectedEls[0] : selectedEls.slice();
+  }
+  attempted++;
+
+  // update score for last question (local)
+  const correctArr = normalizeCorrect(q.correct);
+  if (Array.isArray(answersCollection[current])) {
+    const selectedNorm = answersCollection[current].map(s => String(s).trim().toLowerCase());
+    const correctSet = new Set(correctArr);
+    const selectedSet = new Set(selectedNorm);
+    if (correctArr.length > 0 && selectedSet.size === correctSet.size && [...correctSet].every(c => selectedSet.has(c))) {
+      score++;
+    }
+  } else {
+    if (correctArr.length > 0 && String(answersCollection[current]).trim().toLowerCase() === correctArr[0]) {
+      score++;
+    }
+  }
+
+  await finalizeAndSubmit();
+}
+
+/* attach handlers (replace previous listeners) */
+try {
+  nextBtn.onclick = null;
+  nextBtn.addEventListener('click', enhancedNextHandler);
+} catch (err) { nextBtn.onclick = enhancedNextHandler; }
+
+try {
+  backBtn.onclick = null;
+  backBtn.addEventListener('click', enhancedBackHandler);
+} catch (err) { backBtn.onclick = enhancedBackHandler; }
+
+try {
+  skipBtn.onclick = null;
+  skipBtn.addEventListener('click', enhancedSkipHandler);
+} catch (err) { skipBtn.onclick = enhancedSkipHandler; }
+
+try {
+  submitBtn.onclick = null;
+  submitBtn.addEventListener('click', enhancedSubmitHandler);
+} catch (err) { submitBtn.onclick = enhancedSubmitHandler; }
+
+/* ----------------------
+  Finalize: Hide quiz, send answers to server, show charts (side-by-side), then detailed explanations full width
+  - Fetches /api/submit-quiz and uses returned overall stats + AI explanation
+  - Also builds per-question explanations locally as before
+  - Uses apiSubmitQuiz constant
+-----------------------*/
+let pieChartInstance = null;
+let barChartInstance = null;
+
+function renderPieChart(correct, wrong) {
+  const ctx = pieCanvas.getContext('2d');
+  if (pieChartInstance) pieChartInstance.destroy();
+  pieChartInstance = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Correct', 'Wrong'],
+      datasets: [{ data: [correct, wrong], backgroundColor: ['rgba(46,203,113,0.9)', 'rgba(247,37,133,0.9)'] }]
+    },
+    options: { responsive: true, plugins: { title: { display: false } } }
+  });
+}
+
+function renderBarChart(correct, wrong, skippedCount) {
+  const ctx = barCanvas.getContext('2d');
+  if (barChartInstance) barChartInstance.destroy();
+  barChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Correct', 'Wrong', 'Skipped'],
+      datasets: [{
+        label: 'Questions',
+        data: [correct, wrong, skippedCount],
+        backgroundColor: ['rgba(46,203,113,0.85)', 'rgba(247,37,133,0.85)', 'rgba(243,156,18,0.85)']
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+/* helper: create a friendly summary card inserted above charts */
+function createSummaryCard(correctCount, total, scorePercent) {
+  const wrap = document.createElement('div');
+  wrap.classList.add('summary-card');   // 🔥 ADD THIS
+
+  wrap.style.background = 'linear-gradient(90deg, rgba(76,110,245,0.06), rgba(58,12,163,0.04))';
+  wrap.style.borderRadius = '12px';
+  wrap.style.padding = '16px';
+  wrap.style.margin = '12px 0';
+  wrap.style.boxShadow = '0 4px 14px rgba(12,18,40,0.04)';
+  wrap.innerHTML = `<strong style="font-size:18px;color:#ffffff">Score: ${correctCount}/${total} (${scorePercent}%)</strong>
+                    <div style="margin-top:6px;color:#ffffff;font-size:13px">Good job! Review the explanations below to learn more.</div>`;
+  return wrap;
+}
+
+async function finalizeAndSubmit(){
+  stopTimer();
+
+  // ensure we saved coding answers for current index if present and not yet saved
+  const qMaybe = questions[current];
+  if (qMaybe && String(qMaybe.type || "").toUpperCase() === 'CODING') {
+    saveCurrentSelectionIfCoding();
+  }
+
+  // Hide the quiz card area (questions disappear)
+  if (quizCard) quizCard.style.display = 'none';
+
+  // Send answers to backend for final evaluation + AI explanation
+  let serverResp = null;
+  try {
+    loading.style.display = 'block';
+    loading.innerText = 'Submitting answers...';
+
+    // use apiSubmitQuiz constant
+    const resp = await fetch(apiSubmitQuiz, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ answers: answersCollection })
+    });
+
+    if (!resp.ok) {
+      // attempt to read server body for debugging
+      let txt = '';
+      try { txt = await resp.text(); } catch(_) { txt = resp.statusText; }
+      console.warn("Submit endpoint returned non-OK:", resp.status, txt);
+    }
+
+    serverResp = await resp.json().catch(()=> null);
+    loading.style.display = 'none';
+    if (!serverResp || !serverResp.success) {
+      console.warn("Server submit-quiz returned failure or invalid JSON:", serverResp);
+    }
+  } catch (err) {
+    loading.style.display = 'none';
+    console.error("Error sending answers to server:", err);
+    // proceed with local results fallback
+  }
+
+  // Determine overall counts:
+  // Prefer server counts if available; otherwise compute locally
+  let correctCount = (serverResp && typeof serverResp.correct === 'number') ? serverResp.correct : score;
+  let total = (serverResp && typeof serverResp.total === 'number') ? serverResp.total : totalQuestions;
+  let aiExplanation = (serverResp && serverResp.ai_explanation) ? serverResp.ai_explanation : null;
+  let scorePercent = (serverResp && typeof serverResp.score_percent === 'number') ? serverResp.score_percent : Math.round((correctCount/Math.max(1,total))*10000)/100;
+
+  // compute wrong count (exclude skipped)
+  const wrong = total - correctCount - skipped;
+
+  // render charts
+  if (pieCanvas && barCanvas) {
+    renderPieChart(correctCount, wrong);
+    renderBarChart(correctCount, wrong, skipped);
+  }
+
+  // Show charts area with fade-in
+  if (chartsRow) {
+    chartsRow.style.display = 'flex';
+    // small timeout to ensure CSS transition picks up
+    setTimeout(() => chartsRow.classList.add('visible'), 20);
+  }
+
+  // Build the detailed explanations list (1..n) and then show it with fade-in
+  if (explanationsList) explanationsList.innerHTML = '<h3 style="margin-top:0;">Detailed Explanations</h3>';
+
+  // If server provided detailed feedback array (not currently returned by backend), use it.
+  // Otherwise, use local per-question correctness calculation + question explanation text returned earlier.
+  for (let i = 0; i < totalQuestions; i++) {
+    const q = questions[i];
+    const container = document.createElement('div');
+    container.className = 'explanation-item';
+
+    const left = document.createElement('div');
+    left.className = 'left-block';
+    left.innerHTML = `<div class="num">${i+1}</div>`;
+
+    const right = document.createElement('div');
+    right.className = 'right-block';
+
+    const title = document.createElement('h4');
+    title.innerText = `${q.question || '—'}`;
+    right.appendChild(title);
+
+    const userAns = answersCollection[i];
+    const yourAnsP = document.createElement('p');
+    if (userAns === null || userAns === undefined) {
+      yourAnsP.innerHTML = `<strong>Your Answer:</strong> (skipped)`;
+    } else if (Array.isArray(userAns)) {
+      yourAnsP.innerHTML = `<strong>Your Answer:</strong> ${userAns.join(', ')}`;
+    } else {
+      // For coding answers (long) show trimmed preview
+      const displayAns = (String(userAns).length > 600) ? String(userAns).slice(0,600) + ' ...' : String(userAns);
+      yourAnsP.innerHTML = `<strong>Your Answer:</strong> <pre style="white-space:pre-wrap;margin:6px 0 0;padding:8px;background:#fbfbff;border-radius:6px;border:1px solid #eef2ff;">${escapeHtml(displayAns)}</pre>`;
+    }
+    right.appendChild(yourAnsP);
+
+    // Determine correctness locally (best-effort) — server result used overall
+    const correctArr = normalizeCorrect(q.correct);
+    let isCorrect = false;
+    if (userAns == null) {
+      isCorrect = false;
+    } else if (Array.isArray(userAns)) {
+      const selectedNorm = userAns.map(s => String(s).trim().toLowerCase());
+      const correctSet = new Set(correctArr);
+      const selectedSet = new Set(selectedNorm);
+      if (correctArr.length > 0 && selectedSet.size === correctSet.size) {
+        isCorrect = [...correctSet].every(c => selectedSet.has(c));
+      } else {
+        isCorrect = false;
+      }
+    } else {
+      if (correctArr.length > 0 && String(userAns).trim().toLowerCase() === correctArr[0]) isCorrect = true;
+    }
+
+    const resP = document.createElement('p');
+    resP.className = 'result';
+    resP.innerHTML = `<strong>Result:</strong> ${isCorrect ? '<span style="color:#16a34a">Correct ✅</span>' : '<span style="color:#ef4444">Incorrect ❌</span>'}`;
+    right.appendChild(resP);
+
+    const explText = q.explanation || q.explain || q.hint || "(No explanation provided)";
+    let correctAnsDisplay = "";
+if (Array.isArray(correctArr))
+  correctAnsDisplay = correctArr.join(", ");
+else
+  correctAnsDisplay = correctArr;
+
+const correctP = document.createElement('p');
+correctP.innerHTML = `<strong>Correct Answer:</strong> ${correctAnsDisplay}`;
+right.appendChild(correctP);
+    const explP = document.createElement('div');
+    explP.className = 'explanation-text';
+    explP.innerHTML = `<strong>Explanation:</strong><div style="margin-top:6px;color:#374151">${escapeHtml(explText)}</div>`;
+    right.appendChild(explP);
+
+    container.appendChild(left);
+    container.appendChild(right);
+
+    if (explanationsList) explanationsList.appendChild(container);
+  }
+
+  // show explanations area with fade-in (slightly after charts)
+  if (explanationsList) {
+    explanationsList.style.display = 'block';
+    setTimeout(() => explanationsList.classList.add('visible'), 180);
+  }
+
+  // If AI explanation exists, add a summary card above explanations
+  if (aiExplanation && explanationsList) {
+    const summaryDiv = document.createElement('div');
+    summaryDiv.className = 'explanation-item';
+    summaryDiv.style.background = '#fff8';
+    summaryDiv.style.marginBottom = '12px';
+    summaryDiv.style.border = '1px solid #f1f5f9';
+    summaryDiv.style.borderRadius = '10px';
+    summaryDiv.style.padding = '18px';
+    summaryDiv.innerHTML = `<div style="display:flex;gap:12px;align-items:flex-start"><div style="min-width:48px"><div class="num">∑</div></div><div style="flex:1"><h4>AI Summary Feedback</h4><p style="white-space:pre-wrap;color:#374151">${escapeHtml(aiExplanation)}</p></div></div>`;
+    explanationsList.insertBefore(summaryDiv, explanationsList.firstChild.nextSibling);
+  }
+
+  // Add a friendly summary card above charts
+  const summaryCard = createSummaryCard(correctCount, total, scorePercent);
+  if (chartsRow && chartsRow.parentNode) chartsRow.parentNode.insertBefore(summaryCard, chartsRow);
+
+  // Scroll to top of charts so user sees results immediately
+  if (chartsRow) chartsRow.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// small helper to escape HTML when inserting user code text into the page
+function escapeHtml(unsafe) {
+  if (unsafe === null || unsafe === undefined) return '';
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/* ----------------------
+  small helper: keyboard accessibility
+-----------------------*/
+document.addEventListener('keydown', (e)=>{
+  // only when quiz is visible
+  if(quizCard && quizCard.style.display==='block'){
+    if(e.key === 'ArrowRight' && !nextBtn.disabled) nextBtn.click();
+    if(e.key === 'ArrowLeft') backBtn.click();
+    if(e.key === 's' || e.key==='S') skipBtn.click();
+  }
+});
+
+/* ----------------------
+  Utility: spin animation CSS injection
+-----------------------*/
+(function addSpinStyle(){
+  const style = document.createElement('style');
+  style.innerHTML = `@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}`;
+  document.head.appendChild(style);
+})();
+
+/* ----------------------
+  Fallback demo data (only used when backend not available)
+  - IMPORTANT: demo will NOT auto-run. It only runs if you enable it explicitly
+    by adding `?demo=1` or `?demo=true` to the page URL OR setting
+    `localStorage.setItem('allowDemo','true')` in the console. This prevents the
+    quiz from generating automatically before the user clicks "Generate Quiz".
+-----------------------*/
+(function addLocalDemoIfNoServer(){
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const allowDemo = params.get('demo') === '1' || params.get('demo') === 'true' || localStorage.getItem('allowDemo') === 'true';
+    if (!allowDemo) return; // do nothing unless explicitly enabled
+
+    // add a small delay to allow potential backend to override
+    setTimeout(() => {
+      // If user hasn't generated a quiz within 3s, create a demo quiz for preview/testing.
+      if (questions.length === 0) {
+        // Minimal demo — a few representative questions covering MCQ, MSQ, CODING
+        questions = [
+          { question: "What does a Transformer model use instead of recurrence?", options: ["Convolution", "Self-Attention", "LSTM Gates", "Pooling"], type: "MCQ", correct: ["Self-Attention"], explanation: "Transformers use self-attention to model relationships between tokens without recurrence." },
+          { question: "Select the supervised learning algorithms", options: ["K-Means", "Linear Regression", "PCA", "Decision Tree"], type: "MSQ", correct: ["Linear Regression","Decision Tree"], explanation: "Linear regression and decision trees are supervised algorithms (require labeled data)." },
+          { question: "What is the output of the following Python code: print(2**3)", options: ["5","6","8","9"], type: "MCQ", correct: ["8"], explanation: "2**3 evaluates to 8 (exponentiation)." },
+          { question: "Write a function to return the sum of a list 'arr' in Python", options: [], type: "CODING", correct: [], explanation: "Implement a function that iterates or uses built-in sum()." }
+        ];
+        totalQuestions = questions.length;
+        cardProgress.innerText = `0/${totalQuestions}`;
+        qTotal.innerText = totalQuestions;
+        answersCollection = new Array(totalQuestions).fill(null);
+        codeMirrorEditors = new Array(totalQuestions).fill(null);
+        // show quiz immediately for demo purposes
+        if (quizCard) quizCard.style.display = 'block';
+        showQuestion();
+        startTimer();
+      }
+    }, 3000);
+  } catch (err) {
+    console.warn("Demo initialization failed:", err);
+  }
+})();
+
+/* ----------------------
+  Accessibility & UX tweaks
+  - Ensure focus styles for keyboard users
+-----------------------*/
+(function addA11y(){
+  const style = document.createElement('style');
+  style.innerHTML = `
+    .option:focus { outline: 3px solid rgba(76,110,245,0.18); }
+    button:focus { outline: 2px solid rgba(58,12,163,0.2); }
+  `;
+  document.head.appendChild(style);
+})();
+</script>
+
+</body>
+</html>

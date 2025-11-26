@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Resume ATS Analyzer — Dashboard</title>
+<style>
+  :root{
+    --bg: linear-gradient(135deg, #367ff6, #4364f7, #6fb1fc);
+    --card:#ffffff;
+    --muted:#6b7280;
+    --accent:#2563eb;
+    --accent-2:#06b6d4;
+    --success:#10b981;
+    --warning:#f59e0b;
+    --error:#ef4444;
+    --shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+    --radius:14px;
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial;
+  }
+
+  html,body{
+    height:100%;
+    margin:0;
+    background:var(--bg);
+    color:#0b1220;
+  }
+
+  .container{
+    max-width:1200px;
+    margin:50px auto;
+    padding:20px;
+  }
+
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:20px;
+    color:#fff;
+  }
+
+  header .title h1 {
+    font-size: 2rem;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: linear-gradient(90deg, #ffffff, #a4dcff, #60b8ff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 15px rgba(173, 216, 255, 0.3);
+  }
+
+  header p{
+    margin:5px 0 0;
+    color:#e3ecff;
+    font-size:0.95rem;
+  }
+
+  .hint{
+    font-size:0.9rem;
+    color:#e2ebff;
+  }
+
+  .panel{
+    display:grid;
+    grid-template-columns:360px 1fr;
+    gap:20px;
+    align-items:start;
+  }
+
+  .left{
+    background:rgba(255,255,255,0.95);
+    border-radius:var(--radius);
+    padding:22px;
+    box-shadow:var(--shadow);
+    border-top:4px solid var(--accent);
+  }
+
+  label{
+    font-weight:600;
+    color:#0b1220;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  input[type="file"]{
+    width: 90%;
+    padding:10px;
+    border-radius:10px;
+    border:2px dashed #c9ddff;
+    background:#f6f9ff;
+    cursor:pointer;
+    color:#2563eb;
+    font-weight:500;
+    margin-bottom:12px;
+  }
+
+  textarea{
+    width: 100%;
+    min-height:110px;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #cde3ff;
+    background:#f8fbff;
+    resize:vertical;
+    font-family: inherit;
+    margin-bottom: 16px;
+    box-sizing: border-box;
+  }
+
+  button.primary{
+    width: 100%;
+    border:0;
+    padding:12px;
+    border-radius:10px;
+    background:linear-gradient(90deg, #2563eb, #06b6d4);
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    transition:all .3s ease;
+    box-shadow:0 4px 16px rgba(37,99,235,0.3);
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  button.primary:hover{
+    background:linear-gradient(90deg,#1e40af,#0ea5e9);
+    transform:translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37,99,235,0.4);
+  }
+
+  .progress-indicator {
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  .gauge{
+    display:flex;
+    gap:16px;
+    align-items:center;
+    margin-top:18px;
+    padding:16px;
+    border-radius:14px;
+    background:linear-gradient(180deg,#ffffff,#f0f7ff);
+    box-shadow:0 6px 18px rgba(16,24,40,0.08);
+  }
+
+  .gauge svg{width:120px;height:120px}
+  .gauge .meta{flex:1}
+  .score-big{font-size:1.35rem;font-weight:700;color:#0b1220}
+  .score-sub{color:var(--muted);font-size:0.9rem;margin-top:6px}
+
+  .right-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:18px;
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:16px;
+    box-shadow:var(--shadow);
+    border-top:3px solid var(--accent-2);
+  }
+
+  .card h3{
+    margin:0 0 10px;
+    font-size:1.05rem;
+    color:var(--accent);
+  }
+
+  .empty{color:var(--muted);font-style:italic;}
+
+  .course-item, .job-item {
+    background: #f1f7ff;
+    margin: 6px 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+  }
+
+  .course-item:hover, .job-item:hover { transform: translateY(-2px); }
+
+  .btn-open {
+    background-color: #00bcd4;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background 0.2s;
+    font-size: 0.85rem;
+  }
+  .btn-open:hover { background-color: #0097a7; }
+
+  @media(max-width:940px){
+    .panel{grid-template-columns:1fr}
+    header {flex-direction: column; align-items: flex-start; gap: 10px;}
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    transform: translateX(150%);
+    transition: transform 0.3s ease;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--error); }
+
+  .loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title">
+        <h1>Resume ATS Analyzer</h1>
+        <p>Smart ATS score, skill insights & personalized recommendations</p>
+      </div>
+    </header>
+
+    <div class="panel">
+      <!-- Left -->
+      <div class="left">
+        <label>Upload Resume (PDF / DOCX / TXT)</label>
+        <input id="resumeFile" type="file" accept=".pdf,.docx,.txt" />
+        <div id="fileName" style="font-size:0.9rem;color:var(--muted);margin-bottom:12px;"></div>
+
+        <label>Target Job Role / Description</label>
+        <textarea id="jobDesc" placeholder="e.g., Data Analyst with SQL, Tableau"></textarea>
+
+        <button id="analyzeBtn" class="primary"><span class="btn-text">Analyze Resume</span></button>
+        <div class="progress-indicator"><div id="progressBar" class="progress-bar"></div></div>
+
+        <div class="gauge">
+          <svg id="gaugeSvg" viewBox="0 0 120 120">
+            <defs><linearGradient id="grad" x1="0" x2="1">
+              <stop offset="0%" stop-color="#43e97b"/>
+              <stop offset="100%" stop-color="#38f9d7"/>
+            </linearGradient></defs>
+            <circle cx="60" cy="60" r="44" stroke="#e5eaf5" stroke-width="12" fill="none"></circle>
+            <circle id="gaugeArc" cx="60" cy="60" r="44" stroke="url(#grad)" stroke-width="12"
+              fill="none" stroke-linecap="round" transform="rotate(-90 60 60)"
+              stroke-dasharray="276.46" stroke-dashoffset="276.46"></circle>
+            <text id="gaugeText" x="60" y="64" text-anchor="middle" font-size="18" font-weight="700" fill="#0b1220">0%</text>
+          </svg>
+          <div class="meta">
+            <div class="score-big" id="scoreLabel">ATS Score — 0%</div>
+            <div class="score-sub">Higher score means stronger resume–job match</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right -->
+      <div>
+        <div class="right-grid">
+          <div class="card">
+            <h3>Advice</h3>
+            <div id="adviceBox" class="empty">No advice yet</div>
+          </div>
+
+          <div class="card">
+            <h3>Recommended Courses</h3>
+            <div id="coursesContainer"><div class="empty">No courses yet</div></div>
+          </div>
+
+          <div class="card">
+            <h3>Project Ideas</h3>
+            <div id="projectsList"><div class="empty">No project ideas yet</div></div>
+          </div>
+
+          <div class="card">
+            <h3>Job Openings</h3>
+            <div id="jobsContainer"><div class="empty">No job openings yet</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+<script>
+function showToast(message, type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=message;
+  t.className=`toast ${type}`;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+function updateGauge(score){
+  const arc=document.getElementById("gaugeArc");
+  const text=document.getElementById("gaugeText");
+  const circ=276.46;
+  const offset=circ-(score/100)*circ;
+  arc.style.strokeDashoffset=offset;
+  text.textContent=`${score}%`;
+}
+
+function setLoadingState(isLoading){
+  const btn=document.getElementById("analyzeBtn");
+  const text=btn.querySelector(".btn-text");
+  const bar=document.getElementById("progressBar");
+  if(isLoading){
+    btn.disabled=true;
+    text.innerHTML='<span class="loading-spinner"></span> Analyzing...';
+    let w=0;const intv=setInterval(()=>{if(w>=90)clearInterval(intv);else bar.style.width=(w+=5)+'%';},200);
+  }else{
+    btn.disabled=false;
+    text.textContent='Analyze Resume';
+    bar.style.width='0%';
+  }
+}
+
+document.getElementById('resumeFile').addEventListener('change',e=>{
+  const name=e.target.files[0]?.name;
+  document.getElementById('fileName').textContent=name?`Selected: ${name}`:'';
+});
+document.getElementById('analyzeBtn').addEventListener('click',analyzeResume);
+
+async function analyzeResume(){
+  const file=document.getElementById("resumeFile").files[0];
+  const desc=document.getElementById("jobDesc").value.trim();
+  if(!file)return showToast("Please upload a resume file","error");
+  if(!desc||desc.length<3)return showToast("Please enter a valid job description","error");
+
+  const formData=new FormData();
+  formData.append("resume",file);
+  formData.append("description",desc);
+
+  setLoadingState(true);
+  document.getElementById("adviceBox").innerHTML="<div class='empty'>Analyzing...</div>";
+  document.getElementById("coursesContainer").innerHTML="<div class='empty'>Analyzing...</div>";
+  document.getElementById("projectsList").innerHTML="<div class='empty'>Analyzing...</div>";
+  document.getElementById("jobsContainer").innerHTML="<div class='empty'>Analyzing...</div>";
+
+  try{
+    const res=await fetch("http://127.0.0.1:5000/api/analyze_resume",{method:"POST",body:formData});
+    if(!res.ok)throw new Error("Server error: "+res.status);
+    const data=await res.json();
+    if(!data.success)throw new Error(data.error||"Unknown server error");
+
+    const r=data.result||{};
+    const ats=r.ats_score||0;
+    updateGauge(ats);
+    document.getElementById("scoreLabel").innerText=`ATS Score — ${ats}%`;
+
+    document.getElementById("adviceBox").innerHTML=r.advice?`<p>${r.advice}</p>`:"<div class='empty'>No advice found</div>";
+
+    document.getElementById("coursesContainer").innerHTML=(r.recommended_courses||[]).length
+      ?r.recommended_courses.map(c=>`<div class='course-item'><span><strong>${c.title||c.name}</strong> — ${c.platform||''}</span><a href='${c.url}' target='_blank' class='btn-open'>Open</a></div>`).join("")
+      :"<div class='empty'>No courses found</div>";
+
+    document.getElementById("projectsList").innerHTML=(r.project_ideas||[]).length
+      ?r.project_ideas.map(p=>`<div class='course-item'>${p}</div>`).join("")
+      :"<div class='empty'>No project ideas</div>";
+
+    document.getElementById("jobsContainer").innerHTML=(r.job_openings||[]).length
+      ?r.job_openings.map(j=>`<div class='job-item'><span><strong>${j.title}</strong> — ${j.platform}</span><a href='${j.url}' target='_blank' class='btn-open'>Open</a></div>`).join("")
+      :"<div class='empty'>No job openings</div>";
+
+    showToast("Resume analyzed successfully!","success");
+  }catch(err){
+    console.error(err);
+    showToast("Analysis failed: "+err.message,"error");
+    updateGauge(0);
+    document.getElementById("scoreLabel").innerText="ATS Score — 0%";
+    ["adviceBox","coursesContainer","projectsList","jobsContainer"].forEach(id=>{
+      document.getElementById(id).innerHTML="<div class='empty'>Analysis failed</div>";
+    });
+  }finally{
+    setLoadingState(false);
+  }
+}
+</script>
+</body>
+</html>

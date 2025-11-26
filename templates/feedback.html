@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Feedback Form</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      margin: 0;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 40px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 600px;
+      transition: 0.3s;
+    }
+
+    h1 {
+      text-align: center;
+      color: #4b4acf;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      text-align: center;
+      color: #666;
+      margin-bottom: 2rem;
+    }
+
+    label {
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e1e5e9;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: 0.3s;
+      margin-bottom: 1rem;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: #667eea;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .status {
+      margin-top: 1.2rem;
+      text-align: center;
+      padding: 1rem;
+      border-radius: 10px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      display: block;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Feedback Form</h1>
+    <p>We value your feedback! Please share your thoughts with us.</p>
+
+    <form id="feedbackForm">
+      <label for="name">Your Name</label>
+      <input type="text" id="name" name="name" required>
+
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required
+
+      <label for="rating">Overall Rating</label>
+      <select id="rating" name="rating" required>
+        <option value="">Select rating</option>
+        <option value="5">5 - Excellent</option>
+        <option value="4">4 - Good</option>
+        <option value="3">3 - Average</option>
+        <option value="2">2 - Poor</option>
+        <option value="1">1 - Very Poor</option>
+      </select>
+
+      <label for="experience">Describe Your Experience</label>
+      <textarea id="experience" name="experience" placeholder="Tell us about your experience..." required></textarea>
+
+      <label for="improvements">What could we improve?</label>
+      <textarea id="improvements" name="improvements" placeholder="Any suggestions?"></textarea>
+
+      <button type="submit" class="btn" id="submitBtn">Submit Feedback</button>
+    </form>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    document.getElementById("feedbackForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById("submitBtn");
+      const statusDiv = document.getElementById("status");
+
+      submitBtn.disabled = true;
+      statusDiv.className = "status";
+      statusDiv.style.display = "block";
+      statusDiv.innerHTML = "⏳ Submitting your feedback...";
+
+      const data = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        rating: document.getElementById("rating").value,
+        experience: document.getElementById("experience").value,
+        improvements: document.getElementById("improvements").value,
+      };
+
+      try {
+        const response = await fetch("/feedback/analyze", {  // ✅ updated route
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+          statusDiv.className = "status success";
+          statusDiv.innerHTML = "✅ Feedback submitted successfully!";
+          document.getElementById("feedbackForm").reset();
+        } else {
+          statusDiv.className = "status error";
+          statusDiv.innerHTML = "❌ Error: " + (result.message || "Unexpected error");
+        }
+      } catch (err) {
+        statusDiv.className = "status error";
+        statusDiv.innerHTML = "❌ Network or server error: " + err.message;
+      }
+
+      submitBtn.disabled = false;
+    });
+  </script>
+</body>
+</html>

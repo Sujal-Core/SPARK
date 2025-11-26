@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CareerMentor — Strengths-first career coaching</title>
+  <meta name="description" content="CareerMentor: discover strengths, analyze resumes, and explore career roadmaps." />
+  <meta name="author" content="CareerMentor Team" />
+  <meta name="theme-color" content="#7c3aed" />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --container: 1200px;
+      --accent-1:#7c3aed;
+      --accent-2:#5b21b6;
+      --muted:#6b7280;
+      --success:#10b981;
+      --yellow:#fbbf24;
+      --navy-dark:#0f172a;
+      --navy-soft:#1e293b;
+      --sidebar-width:360px;
+      --transition:280ms cubic-bezier(.2,.9,.2,1);
+
+      /* card colors */
+      --card-bg:#ffffff;
+      --card-text:#111827;
+      --card-bg-dark: #0f1726; /* improved contrast */
+      --card-text-dark: #e6eefb;
+      --overlay-light: rgba(255,255,255,0.6);
+      --overlay-dark: rgba(0,0,0,0.55);
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;font-family:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background: linear-gradient(180deg, #f4e8ff 0%, #e8f1ff 50%, #ffeef5 100%);
+      background-attachment: fixed;
+      background-size: 100% 100%;
+      color:#111827;line-height:1.6;
+      transition:background var(--transition),color var(--transition);
+      color:#111827;line-height:1.6;
+      transition:background var(--transition),color var(--transition);
+    }
+
+    .container{max-width:var(--container);margin:0 auto;padding:0 20px;}
+
+    /* NAVBAR */
+    header.navbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:14px 20px;
+      background:#fff;
+      box-shadow:0 6px 22px rgba(16,24,40,0.05);
+      position:sticky;top:0;z-index:1200;
+      backdrop-filter: blur(6px);
+      transition:background .35s ease,box-shadow .35s ease;
+    }
+
+     .logo-img {
+      height: 100px;
+      width: auto;
+      border-radius: 50px;
+      animation: floatLogo 3s ease-in-out infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes floatLogo {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0px); }
+    }
+
+
+
+    .nav-right{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      margin-right:20px;
+    }
+
+    .toggle-dark{
+      padding:9px 16px;
+      border-radius:999px;
+      border:none;
+      font-weight:700;
+      color:white;
+      background:linear-gradient(135deg,var(--accent-1),#9f67ff);
+      cursor:pointer;
+      box-shadow:0 6px 20px rgba(124,58,237,0.12);
+    }
+
+    .btn.login{
+      background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+      color:white;
+      padding:10px 18px;
+      border-radius:999px;
+      border:none;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .user-section{
+      padding:8px 12px;
+      border-radius:10px;
+      color:var(--accent-2);
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    /* HERO */
+    .hero{
+      text-align:center;
+      padding:96px 20px 56px;
+      background:linear-gradient(120deg,#c7d2fe,#f5f3ff);
+      color:#1e1b4b;
+      position:relative;overflow:hidden;
+    }
+
+    /* subtle animated gradient blobs behind hero */
+    .hero::before, .hero::after{
+      content:'';position:absolute;border-radius:50%;filter:blur(80px);opacity:.55;transform:translate3d(0,0,0);
+    }
+    .hero::before{width:380px;height:380px;background:linear-gradient(135deg,#7c3aed,#a78bfa);left:-80px;top:-90px}
+    .hero::after{width:300px;height:300px;background:linear-gradient(135deg,#60a5fa,#a78bfa);right:-70px;bottom:-90px}
+
+    .hero h2{font-size:2.6rem;font-weight:800;margin-bottom:14px;position:relative;z-index:2}
+    .hero p{max-width:820px;margin:0 auto;color:#475569;font-size:1.05rem;position:relative;z-index:2}
+
+    .tags{margin-top:20px;position:relative;z-index:2}
+
+    .tag{display:inline-block;padding:8px 14px;border-radius:999px;margin:5px;font-weight:600}
+    .tag.green{background:#d1fae5;color:#065f46}
+    .tag.yellow{background:#fef9c3;color:#854d0e}
+    .tag.purple{background:#ede9fe;color:#5b21b6}
+
+    .greeting{margin-top:18px;font-weight:600;color:var(--muted);text-align:center}
+
+    /* FEATURES */
+    .features{display:flex;justify-content:center;align-items:flex-start;gap:40px;padding:80px 20px;flex-wrap:wrap}
+
+    .card{$1width: 220px;$2height: 220px; /* square */
+  background: var(--card-bg);
+  border-radius: 30px;
+  padding: 40px 35px;
+  text-align: center;
+  box-shadow: 0 15px 45px rgba(0,0,0,0.07);
+  transition: all .45s cubic-bezier(.2,.9,.2,1);
+  position: relative;
+  opacity: 0;
+  transform: translateY(18px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+    .card.in-view{transform:none;opacity:1}
+
+    .card:hover{transform:translateY(-8px);box-shadow:0 20px 55px rgba(0,0,0,0.12)}
+
+    .card h3{font-size:24px;font-weight:700;color:var(--accent-2);margin-bottom:15px}
+    .card p{font-size:16px;color:#555;margin-bottom:26px;line-height:1.55}
+
+    .btn.small{padding:10px 18px;border-radius:999px;font-weight:700;border:none;cursor:pointer}
+
+    .btn.green{background:var(--success);color:#fff}
+    .btn.yellow{background:var(--yellow);color:#fff}
+    .btn.purple{background:var(--accent-1);color:#fff}
+
+    .protected-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--overlay-light);border-radius:30px;font-weight:700;color:#444}
+
+    /* PROMISE */
+    .promise{padding:64px 20px;background:linear-gradient(120deg,#faf5ff,#ede9fe);text-align:center;position:relative}
+
+    .promise h3{font-size:1.65rem;margin-bottom:8px}
+    .promise p{color:#475569;max-width:860px;margin:0 auto}
+
+    .promise-grid{display:flex;gap:28px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+
+    .promise-grid .box{width:260px;background:white;padding:22px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.04);transform:translateY(18px);opacity:0;transition:all .45s cubic-bezier(.2,.9,.2,1);position:relative}
+    .promise-grid .box.in-view{transform:none;opacity:1}
+
+    .promise-grid .box .icon{
+      width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 10px;background:linear-gradient(135deg,var(--accent-1),#9f67ff);color:white;box-shadow:0 8px 24px rgba(124,58,237,0.14)
+    }
+
+    .promise-grid .box h4{margin:6px 0 10px;font-size:1.05rem}
+    .promise-grid .box p{color:#475569;font-size:14px}
+
+    .promise-grid .box:hover{transform:translateY(-6px) scale(1.02)}
+
+    /* CTA */
+    /* DARK MODE CTA FIX */
+    body.dark .cta {
+      background: linear-gradient(180deg,#18172b 0%, #211b36 50%, #2a2145 100%) !important;
+      color: #e6e9ff;
+    }
+
+    /* CTA */
+    .cta{padding:64px 20px;background: linear-gradient(180deg, #f4e8ff 0%, #e8f1ff 60%, #ffeef5 100%);text-align:center}
+    .cta h3{font-size:1.4rem;margin-bottom:12px}
+
+    /* FOOTER */
+    .footer-content{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2rem;padding:36px 20px;background:white;border:none}
+
+    .footer-section a{text-decoration:none;color:#5e35b1;font-weight:500}
+    .footer-section a:hover{color:#7c3aed}
+
+    .footer-logo{height:60px;border-radius:8px;object-fit:cover}
+
+    .footer-bottom{text-align:center;padding:14px;background:#faf9ff;color:#6b7280;border-top:1px solid #ebe6ff}
+
+    /* SIDEBAR */
+    .sidebar{position:fixed;top:0;right:calc(-1 * var(--sidebar-width));width:var(--sidebar-width);height:100%;background:linear-gradient(180deg,#141229,#0f1224);color:white;padding:20px;transition:right var(--transition),transform .35s ease;display:flex;flex-direction:column;z-index:2000;transform:translateX(0)}
+
+    .sidebar.active{right:0;transform:none}
+
+    .close-btn{position:absolute;right:12px;top:12px;background:none;border:none;color:white;font-size:22px;cursor:pointer}
+
+    .avatar{width:90px;height:90px;border-radius:50%;background:#6d28d9;margin:20px auto 10px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700}
+
+    .sidebar label{margin-top:12px;font-weight:600;color:#ddd}
+    .sidebar input{width:100%;padding:10px;border-radius:8px;margin-top:6px;background:rgba(255,255,255,0.08);border:none;color:white}
+    .sidebar input[disabled]{opacity:.9}
+
+    .btn-row{display:flex;gap:10px;margin-top:22px}
+
+    .bottom-area{margin-top:auto;padding-top:20px}
+
+    #sidebarLogoutBtn{width:100%;padding:12px;border-radius:12px;background:#ff4b5c;color:white;font-weight:700;border:none;cursor:pointer;display:none}
+
+    /* DARK MODE */
+    body.dark{background:linear-gradient(135deg,#0b1020,#15132a);color:#e6eefb}
+
+    body.dark .hero{background:linear-gradient(120deg,#2e1065,#24133f);color:#e6e9ff}
+    body.dark header.navbar{background:linear-gradient(135deg,#20123f,#2a1e4a);color:#eef2ff}
+
+    /* fixed card colors for dark mode (improved contrast) */
+    body.dark .card{background:var(--card-bg-dark);color:var(--card-text-dark);border:1px solid rgba(255,255,255,0.04);box-shadow:0 12px 30px rgba(2,6,23,0.6)}
+    body.dark .card h3{color:#d7c7ff}
+    body.dark .card p{color:#c8d2ff}
+
+    body.dark .protected-overlay{background:var(--overlay-dark);color:#fff}
+
+    body.dark footer{background:#0e1326;color:#cbd5ff}
+    body.dark .footer-content{background:#161426}
+    body.dark .footer-bottom{background:#0d1020;color:#9ca3af;border-top:1px solid rgba(255,255,255,0.06)}
+
+    body.dark .promise{background:linear-gradient(120deg,#1e1b4b,#2a1b4f);color:#e4e7ff}
+    body.dark .promise-grid .box{background:#0f1626;border:1px solid rgba(167,139,250,0.06);box-shadow:0 8px 22px rgba(3,6,23,0.5);color:var(--card-text-dark)}
+
+    body.dark .promise-grid .box .icon{background:linear-gradient(135deg,#6d28d9,#a78bfa)}
+
+    /* Remove underline in footer ALWAYS */
+    .footer-section ul li a{text-decoration:none !important;color:#4c1d95}
+    body.dark .footer-section ul li a{color:#bfaaff}
+
+    .footer-section ul{list-style:none;padding:0;margin:0;line-height:1.8}
+
+    /* Responsive */
+    @media (max-width:880px){
+      header.navbar{padding:12px}
+      .logo-img{height:65px;} flex-wrap:wrap; justify-content:center;}
+      .card{width:300px; height:300px;} /* still squares but smaller for mobile */
+      .sidebar{width:100%;right:-100%}
+      .sidebar.active{right:0}
+      .promise-grid{gap:18px}
+      }
+      .logo-img{height:48px}
+      .features{gap:20px}
+      .card{width:100%;max-width:420px}
+      .sidebar{width:30%;right:-100%}
+      .sidebar.active{right:0}
+      .promise-grid{gap:18px}
+    }
+
+    a:focus,button:focus,input:focus{outline:3px solid rgba(124,58,237,0.16);outline-offset:3px}
+
+    /* Accessibility: prefer reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .card,.promise-grid .box{transition:none}
+      .hero::before,.hero::after{display:none}
+    }
+
+ /* --------------------------
+   CHAT BUBBLE
+--------------------------- */
+#chat-bubble {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #4a90e2, #1d65c1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    z-index: 9999;
+    animation: floatBubble 3s ease-in-out infinite;
+    transition: transform 0.35s ease;
+}
+
+/* FIXED ANIMATION — No transform used */
+@keyframes floatBubble {
+    0% { margin-bottom: 0px; }
+    50% { margin-bottom: 6px; }
+    100% { margin-bottom: 0px; }
+}
+
+/* --------------------------
+   CHAT WINDOW
+--------------------------- */
+#chat-window {
+    position: fixed;
+    bottom: 90px;
+    right: 25px;
+    width: 360px;
+    height: 500px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0px 10px 35px rgba(0,0,0,0.25);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 10000;
+    animation: popUp 0.25s ease-out;
+    transition: transform 0.35s ease;
+}
+
+@keyframes popUp {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* --------------------------
+   CHAT HEADER
+--------------------------- */
+#chat-header {
+    background: linear-gradient(135deg, #4a90e2, #1d65c1);
+    padding: 16px 20px;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* --------------------------
+   CHAT BODY
+--------------------------- */
+#chat-body {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f7f9fb;
+    display: flex;
+    flex-direction: column;
+}
+
+/* USER BUBBLE */
+.user-message {
+    background: #d6e9ff;
+    padding: 12px 14px;
+    border-radius: 14px;
+    margin: 8px 0;
+    align-self: flex-end;
+    max-width: 80%;
+    line-height: 1.5;
+}
+
+/* BOT BUBBLE */
+.bot-message {
+    background: #fff8e6;
+    padding: 14px 18px;
+    margin: 10px 0;
+    border-radius: 16px;
+    max-width: 85%;
+    line-height: 1.6;
+    font-size: 15px;
+    color: #374151;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* --------------------------
+   INPUT AREA
+--------------------------- */
+#chat-input-box {
+    display: flex;
+    padding: 12px;
+    background: #ffffff;
+    border-top: 1px solid #eee;
+}
+
+#chat-input {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+#send-btn {
+    margin-left: 10px;
+    background: #4a90e2;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
+    color: white;
+    cursor: pointer;
+}
+
+/* --------------------------
+   SLIDE LEFT WHEN SIDEBAR OPENS
+--------------------------- */
+body.sidebar-open #chat-bubble,
+body.sidebar-open #chat-window {
+    transform: translateX(-30vw);
+}
+
+/* MOBILE: Sidebar covers whole screen */
+@media (max-width: 880px) {
+    body.sidebar-open #chat-bubble,
+    body.sidebar-open #chat-window {
+        right: calc(25px + 100vw); /* Since sidebar = full width */
+    }
+
+}
+
+
+
+
+
+ </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+  <div class="logo">
+    <img src="{{ url_for('static', filename='spark.jpg') }}" alt="Spark Logo" class="logo-img">
+  </div>
+
+  <div class="nav-right">
+    <button id="themeToggle" class="toggle-dark">🌙 Dark Mode</button>
+
+    <div class="user-section" id="navUserTrigger" role="button" tabindex="0">
+      <span id="navUserName">Guest</span>
+    </div>
+
+    <a id="loginLink" href="/login">
+      <button class="btn login">Login</button>
+    </a>
+  </div>
+</header>
+
+<!-- HERO -->
+<main>
+<section class="hero">
+  <div class="container">
+    <h2 class="animate-on-scroll">Your Skills, Your Future, Your Roadmap</h2>
+    <p class="animate-on-scroll">Welcome to a platform that believes in you. We celebrate strengths-first
+       growth and help you build a meaningful career.</p>
+
+    <div class="tags animate-on-scroll">
+      <span class="tag green">Strengths-First Approach</span>
+      <span class="tag yellow">Gentle Growth Guidance</span>
+      <span class="tag purple">Celebrate Every Win</span>
+    </div>
+
+    <div id="greeting" class="greeting"></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+
+  <!-- Resume -->
+  <div class="card protected animate-on-scroll" id="resumeCard">
+    <h3>Resume Analysis</h3>
+    <p>Get tailored resume insights, then get suggestions to improve your resume.</p>
+    <div class="card-actions">
+      <a class="btn-link protected-action" data-target="/resume" href="#">
+        <button class="btn small green">Analyze My Resume</button>
+      </a>
+    </div>
+    <div class="protected-overlay">Please log in to use this</div>
+  </div>
+
+  <!-- Quiz -->
+  <div class="card protected animate-on-scroll" id="quizCard">
+    <h3>Domain Quiz</h3>
+    <p>Test Your knowledge with supportive feedback and growth guidance.</p>
+    <div class="card-actions">
+      <a class="btn-link protected-action" data-target="/quiz/AI%20Engineer" href="#">
+        <button class="btn small yellow">Take Domain Quiz</button>
+      </a>
+    </div>
+    <div class="protected-overlay">Please log in to use this</div>
+  </div>
+
+  <!-- Roadmap -->
+  <div class="card protected animate-on-scroll" id="roadmapCard">
+    <h3>Career Roadmap</h3>
+    <p>Explore career paths and plan your growth milestones celebration</p>
+    <div class="card-actions">
+      <a class="btn-link protected-action" data-target="/explore_jobs" href="#">
+        <button class="btn small purple">Explore My Journey</button>
+      </a>
+    </div>
+    <div class="protected-overlay">Please log in to use this</div>
+  </div>
+
+</section>
+
+<!-- PROMISE -->
+  <section class="promise">
+    <h3>Our Mindset to You</h3>
+    <p>Every interaction is designed to lift you up, celebrate your journey,
+      and remind you that you’re capable of amazing things!</p>
+    <div class="promise-grid">
+      <div class="box animate-on-scroll">
+        <div class="icon">💪</div>
+        <h4>Strengths First</h4>
+        <p>We always start by celebrating what you do brilliantly — then build from there.</p>
+      </div>
+      <div class="box animate-on-scroll">
+        <div class="icon">🌱</div>
+        <h4>Growth Mindset</h4>
+        <p>Every challenge is reframed into an opportunity with supportive next steps.</p>
+      </div>
+      <div class="box animate-on-scroll">
+        <div class="icon">🚀</div>
+        <h4>Your Success</h4>
+        <p>Small wins matter — we celebrate them and help you carry that momentum forward.</p>
+      </div>
+    </div>
+  </section>
+
+<!-- CTA -->
+<section class="cta">
+  <h3>Ready to Start Your Journey?</h3>
+  <p>Choose a tool and begin your growth.</p>
+
+  <div style="margin-top:18px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+    <a class="btn-link protected-action" data-target="/resume" href="#">
+      <button class="btn small green">Start with Resume</button>
+    </a>
+    <a class="btn-link protected-action" data-target="/explore_jobs" href="#">
+      <button class="btn small purple">Explore Careers</button>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-content">
+    <div class="footer-section about">
+      <img src="{{ url_for('static', filename='spark.jpg') }}" alt="CareerMentor Logo" class="footer-logo">
+      <p>CareerMentor helps learners discover their strengths and explore meaningful career paths.</p>
+    </div>
+
+    <div class="footer-section links">
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="{{ url_for('resume_page') }}">Resume Analyzer</a></li>
+        <li><a href="{{ url_for('quiz_page', domain='AI Engineer') }}">Domain Quiz</a></li>
+        <li><a href="{{ url_for('explore_jobs') }}">Career Roadmap</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section links">
+      <h3>Support</h3>
+      <ul>
+        <li><a href="#">FAQs</a></li>
+        <li><a href="{{ url_for('team_page') }}">Contact Us</a></li>
+        <li><a href="{{ url_for('feedback_form') }}">Feedback</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section links">
+      <h3>Legal</h3>
+      <ul>
+       <li><a href="/privacy-policy">Privacy Policy</a></li>
+       <li><a href="/terms-of-service">Terms of Service</a></li>
+       <li><a href="/ai-ethics-policy">AI Ethics Policy</a></li>
+
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2025 CareerMentor. All rights reserved. | Built with 💜 by the CareerMentor Team</p>
+  </div>
+</footer>
+
+
+<!-- Chat Bubble -->
+<div id="chat-bubble" onclick="openChat()">
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" width="30">
+</div>
+
+<!-- Chat Window -->
+<div id="chat-window">
+  <div id="chat-header">
+    <span>⚡ Sparky</span>
+    <button id="close-btn" onclick="closeChat()">✖</button>
+  </div>
+
+  <div id="chat-body">
+      <div id="typing" style="display:none;">Sparky is typing...</div>
+  </div>
+
+  <div id="chat-input-box">
+    <input type="text" id="chat-input" placeholder="Ask Sparky..." />
+    <button id="send-btn" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+
+
+
+<!-- SIDEBAR -->
+<aside id="sidebar" class="sidebar" aria-hidden="true">
+  <button class="close-btn" id="sidebarCloseBtn">&times;</button>
+
+  <div class="avatar" id="sidebarAvatar">G</div>
+
+  <label for="emailField">Email</label>
+  <input id="emailField" type="text" disabled>
+
+  <label for="nameField">Name</label>
+  <input id="nameField" type="text" disabled>
+
+  <label for="phoneField">Phone</label>
+  <input id="phoneField" type="tel" disabled>
+
+  <label for="locationField">Location</label>
+  <input id="locationField" type="text" disabled>
+
+  <label for="linkedinField">LinkedIn</label>
+  <input id="linkedinField" type="url" placeholder="https://linkedin.com/in/..." disabled>
+
+  <label for="githubField">GitHub</label>
+  <input id="githubField" type="url" placeholder="https://github.com/username" disabled>
+
+  <!-- Edit + Save Row -->
+  <div class="btn-row">
+    <button id="editBtn" class="btn small" style="background:#6366f1;color:white;flex:1">✏️ Edit</button>
+    <button id="saveBtn" class="btn small" style="background:#10b981;color:white;flex:1;display:none;">💾 Save</button>
+    <button id="cancelBtn" class="btn small" style="background:#374151;color:white;flex:1;display:none;">Cancel</button>
+  </div>
+
+  <!-- Logout at bottom -->
+  <div class="bottom-area">
+    <button id="sidebarLogoutBtn" class="btn small"
+      style="background:#ff4b5c;color:white;width:100%;padding:12px;border-radius:12px;display:none;">
+      Logout
+    </button>
+  </div>
+</aside>
+
+<script>
+/* -------------------------------
+   DOM Helpers
+--------------------------------*/
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+/* -------------------------------
+   References
+--------------------------------*/
+const themeToggle = $('#themeToggle');
+const navUserTrigger = $('#navUserTrigger');
+const navUserName = $('#navUserName');
+const loginLink = $('#loginLink');
+
+const sidebar = $('#sidebar');
+const sidebarCloseBtn = $('#sidebarCloseBtn');
+const sidebarAvatar = $('#sidebarAvatar');
+const sidebarLogoutBtn = $('#sidebarLogoutBtn');
+
+const emailField = $('#emailField');
+const nameField = $('#nameField');
+const phoneField = $('#phoneField');
+const locationField = $('#locationField');
+const linkedinField = $('#linkedinField');
+const githubField = $('#githubField');
+
+const editBtn = $('#editBtn');
+const saveBtn = $('#saveBtn');
+const cancelBtn = $('#cancelBtn');
+
+const greeting = $('#greeting');
+
+/* -------------------------------
+   Global State
+--------------------------------*/
+let currentUser = null;let editing = false;let pristine = {};
+
+/* -------------------------------
+   Init Theme
+--------------------------------*/
+(function initTheme() {
+  try {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') {
+      document.body.classList.add('dark');
+      themeToggle.textContent = '☀ Light Mode';
+      themeToggle.setAttribute('aria-pressed', 'true');
+    } else {
+      themeToggle.textContent = '🌙 Dark Mode';
+      themeToggle.setAttribute('aria-pressed', 'false');
+    }
+  } catch (e) {
+    themeToggle.textContent = '🌙 Dark Mode';
+  }
+})();
+
+themeToggle.addEventListener('click', () => {
+  const isDark = document.body.classList.toggle('dark');
+  themeToggle.textContent = isDark ? '☀ Light Mode' : '🌙 Dark Mode';
+  themeToggle.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+});
+
+/* -------------------------------
+   Sidebar Controls
+--------------------------------*/
+function openSidebar() {
+    sidebar.classList.add('active');
+    sidebar.setAttribute('aria-hidden', 'false');
+
+    // ADD THIS
+    document.body.classList.add('sidebar-open');
+}
+
+function closeSidebar() {
+    sidebar.classList.remove('active');
+    sidebar.setAttribute('aria-hidden', 'true');
+
+    // ADD THIS
+    document.body.classList.remove('sidebar-open');
+}
+
+navUserTrigger.addEventListener('click', openSidebar);
+sidebarCloseBtn.addEventListener('click', closeSidebar);
+
+/* click outside closes */
+document.addEventListener('click', (e) => {
+  if (!sidebar.classList.contains('active')) return;
+  if (!sidebar.contains(e.target) && !navUserTrigger.contains(e.target)) closeSidebar();
+});
+
+/* escape closes */
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
+
+/* -------------------------------
+   Protected Actions
+--------------------------------*/
+function protectActionsWhenLoggedOut(){ $$('.protected-action').forEach(el=>{el.removeEventListener('click',protectedClickHandler);el.addEventListener('click',protectedClickHandler);}); }
+function protectedClickHandler(e){ if (!currentUser){ e.preventDefault(); sessionStorage.setItem('after_auth_redirect', this.getAttribute('data-target')||this.getAttribute('href')||'/'); window.location.href='/login'; return;} const target=this.getAttribute('data-target'); if (target){ e.preventDefault(); window.location.href=target; }}
+
+/* -------------------------------
+   Load User Data
+--------------------------------*/
+async function loadUserData(){ try{ const res=await fetch('/get_user_data',{cache:'no-store'}); if (!res.ok) throw new Error(); currentUser=await res.json(); }catch{ currentUser=null;} bindUserToUI(); protectActionsWhenLoggedOut(); }
+
+/* -------------------------------
+   Bind User to UI
+--------------------------------*/
+function bindUserToUI(){ if (currentUser){ loginLink.style.display='none'; sidebarLogoutBtn.style.display='block'; const shortName=(currentUser.name||'').split(' ')[0]||currentUser.email.split('@')[0]; navUserName.textContent=shortName; greeting.textContent=currentUser.name?`Welcome ${currentUser.name}!` : ''; emailField.value=currentUser.email||''; nameField.value=currentUser.name||''; phoneField.value=currentUser.phone||''; locationField.value=currentUser.location||''; linkedinField.value=currentUser.linkedin||''; githubField.value=currentUser.github||''; sidebarAvatar.textContent=(currentUser.name||currentUser.email||'G').charAt(0).toUpperCase(); $$('.protected-overlay').forEach(ov=>ov.style.display='none'); refreshSocialAnchors(); } else { loginLink.style.display='inline-block'; sidebarLogoutBtn.style.display='none'; navUserName.textContent='Guest'; greeting.textContent=''; [emailField,nameField,phoneField,locationField,linkedinField,githubField].forEach(f=>f.value=''); sidebarAvatar.textContent='G'; $$('.protected-overlay').forEach(ov=>ov.style.display='flex'); removeSocialAnchors(); }}
+function removeSocialAnchors(){ $$('a.social-anchor').forEach(a=>a.remove()); }
+function refreshSocialAnchors(){ removeSocialAnchors(); if (!currentUser) return; if (linkedinField.value.trim()!==''){ const a=document.createElement('a'); a.href=linkedinField.value.trim(); a.target='_blank'; a.className='social-anchor'; a.textContent='Open LinkedIn'; linkedinField.insertAdjacentElement('afterend',a);} if (githubField.value.trim()!==''){ const a=document.createElement('a'); a.href=githubField.value.trim(); a.target='_blank'; a.className='social-anchor'; a.textContent='Open GitHub'; githubField.insertAdjacentElement('afterend',a);} }
+
+/* -------------------------------
+   Edit Mode
+--------------------------------*/
+function enterEditMode(){ if (!currentUser){ window.location.href='/login'; return;} editing=true; pristine={ name:nameField.value, phone:phoneField.value, location:locationField.value, linkedin:linkedinField.value, github:githubField.value }; [nameField,phoneField,locationField,linkedinField,githubField].forEach(f=>f.disabled=false); editBtn.style.display='none'; saveBtn.style.display='inline-block'; cancelBtn.style.display='inline-block'; removeSocialAnchors(); }
+function exitEditMode(){ editing=false; [nameField,phoneField,locationField,linkedinField,githubField].forEach(f=>f.disabled=true); editBtn.style.display='inline-block'; saveBtn.style.display='none'; cancelBtn.style.display='none'; refreshSocialAnchors(); }
+editBtn.addEventListener('click', enterEditMode);
+cancelBtn.addEventListener('click', ()=>{ nameField.value=pristine.name; phoneField.value=pristine.phone; locationField.value=pristine.location; linkedinField.value=pristine.linkedin; githubField.value=pristine.github; exitEditMode(); });
+
+/* -------------------------------
+   Save User Info
+--------------------------------*/
+saveBtn.addEventListener('click', async ()=>{ const payload={ name:nameField.value.trim(), phone:phoneField.value.trim(), location:locationField.value.trim(), linkedin:linkedinField.value.trim(), github:githubField.value.trim() }; saveBtn.textContent='Saving...'; saveBtn.disabled=true; try{ const res=await fetch('/update_user',{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }); if (!res.ok) throw new Error(); Object.assign(currentUser,payload); navUserName.textContent=payload.name.split(' ')[0]||'User'; greeting.textContent=`Welcome back, ${payload.name}!`; exitEditMode(); saveBtn.textContent='Saved!'; setTimeout(()=>saveBtn.textContent='💾 Save',800); }catch(err){ alert('Failed to save changes.'); } saveBtn.disabled=false; });
+
+/* -------------------------------
+   Logout
+--------------------------------*/
+sidebarLogoutBtn.addEventListener('click', async ()=>{ sessionStorage.clear(); await fetch('/logout',{ method:'GET' }); window.location.href='/'; });
+
+/* -------------------------------
+   Scroll animations (IntersectionObserver)
+--------------------------------*/
+(function initScrollAnimations(){
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if (entry.isIntersecting) entry.target.classList.add('in-view');
+    });
+  },{threshold:0.18});
+
+  document.querySelectorAll('.animate-on-scroll').forEach(el=>observer.observe(el));
+})();
+
+/* -------------------------------
+   Basic keyboard accessibility for sidebar trigger
+--------------------------------*/
+navUserTrigger.addEventListener('keydown',(e)=>{ if (e.key==='Enter' || e.key===' ') { e.preventDefault(); openSidebar(); }});
+
+/* -------------------------------
+   INIT
+--------------------------------*/
+loadUserData(); protectActionsWhenLoggedOut();
+
+/* -------------------------------
+   Chatbot Functionality
+--------------------------------*/
+function openChat() {
+    document.getElementById("chat-window").style.display = "flex";
+    document.getElementById("chat-bubble").style.display = "none";
+}
+
+function closeChat() {
+    document.getElementById("chat-window").style.display = "none";
+    document.getElementById("chat-bubble").style.display = "flex";
+}
+
+async function sendMessage() {
+    let input = document.getElementById("chat-input");
+    let message = input.value.trim();
+    if (!message) return;
+
+    addMessage(message, "user-message", true);
+    input.value = "";
+
+    document.getElementById("typing").style.display = "block";
+
+    let response = await fetch("/chatbot", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message})
+    });
+
+    let data = await response.json();
+    document.getElementById("typing").style.display = "none";
+
+    addMessage(data.reply, "bot-message", false);
+}
+
+// Enter key to send message
+document.getElementById("chat-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// Add message to chat
+function addMessage(text, cls, userMessage = false) {
+    const body = document.getElementById("chat-body");
+    const msg = document.createElement("div");
+
+    msg.className = cls;
+    msg.innerHTML = formatMarkdown(text);
+
+
+    body.appendChild(msg);
+
+    if (userMessage) {
+        body.scrollTo({
+            top: body.scrollHeight - 40,
+            behavior: "smooth"
+        });
+    }
+}
+function formatMarkdown(text) {
+
+    // Bold: **text**
+    text = text.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+    // Lists: 1. item  OR - item
+    text = text.replace(/^\s*[-*]\s+(.*)/gm, "<li>$1</li>");
+    text = text.replace(/^\s*\d+\.\s+(.*)/gm, "<li>$1</li>");
+
+    // Wrap consecutive <li> elements in <ul>
+    text = text.replace(/(<li>[\s\S]*?<\/li>)/g, "<ul>$1</ul>");
+
+    // Line breaks to <br>
+    text = text.replace(/\n/g, "<br>");
+
+    return text;
+}
+
+
+</script>
+</body>
+</html>
