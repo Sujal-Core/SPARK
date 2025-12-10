@@ -1,4 +1,3 @@
-
 # SPARK — Career Mentor Platform
 
 SPARK is a comprehensive career mentorship platform built using **Flask (Python)**.
